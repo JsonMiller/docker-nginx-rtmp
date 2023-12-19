@@ -1,0 +1,41 @@
+
+rtmp {
+    server {
+        listen 1935;
+        chunk_size 4096;
+
+        application live {
+            live on;
+            meta copy;
+
+            # push rtmp://live.twitch.tv/app/{your-twitch-stream-key} twitch;
+
+            # push rtmp://a.rtmp.youtube.com/live2/{your-youtube-stream-key} youtube;
+        }
+
+        application dead {
+            live on;
+            meta copy;
+        }
+    }
+}
+
+http {
+    server {
+        listen ${PORT};
+
+        location / {
+            root /path/to/your/player;
+            index index.html;
+        }
+
+        location ~ /live/(?<stream_key>\w+)$ {
+            rtmp_pass rtmp://localhost/$stream_key;
+            error_page 415 = /empty;
+        }
+
+        location /empty {
+            internal;
+        }
+    }
+}
